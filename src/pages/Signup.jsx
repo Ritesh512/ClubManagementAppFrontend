@@ -1,7 +1,7 @@
-import React, { useState,useEffect } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import {  toast } from "react-toastify";
 
 const CenteredContainer = styled.div`
   display: flex;
@@ -26,7 +26,7 @@ const Header = styled.h2`
   padding: 20px;
 `;
 
-const LoginForm = styled.form`
+const SignupForm = styled.form`
   display: flex;
   flex-direction: column;
   padding: 20px;
@@ -39,6 +39,8 @@ const FormInput = styled.input`
   border: 1px solid #ccc;
   border-radius: 4px;
 `;
+
+
 
 const SubmitButton = styled.button`
   background-color: #3498db;
@@ -54,7 +56,7 @@ const SubmitButton = styled.button`
   }
 `;
 
-const CreateAccountLink = styled.p`
+const LoginLink = styled.p`
   text-align: center;
   margin-top: 15px;
   font-size: 14px;
@@ -70,33 +72,27 @@ const CreateAccountLink = styled.p`
   }
 `;
 
-const SelectRole = styled.select`
-  margin-bottom: 15px;
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-`;
-
-const Login = () => {
+const Signup = () => {
+  const [name, setName] = useState(""); // Step 1: Add name state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("user");
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const auth = localStorage.getItem("user");
-    if (auth) {
-      navigate("/");
-    }
-  }, []);
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Login clicked!");
-    let result = await fetch("http://localhost:8000/login",{
+    console.log("Signup clicked!");
+    // Add your signup logic here, including the 'name' field
+    const userData = {
+      name,
+      email,
+      password,
+    };
+    console.log(userData);
+
+    let result = await fetch("http://localhost:8000/register",{
             method:"post",
-            body:JSON.stringify({email,password,role}),
+            body:JSON.stringify(userData),
             headers:{'Content-Type': 'application/json'}
         });
         result = await result.json();
@@ -104,7 +100,7 @@ const Login = () => {
         if(result.auth){
             localStorage.setItem("user",JSON.stringify(result.user));
             localStorage.setItem("token",JSON.stringify(result.auth));
-            toast.success("Login Successfully", {
+            toast.success("SignUp Successfully", {
               position: toast.POSITION.TOP_RIGHT,
             });
         }else{
@@ -118,11 +114,17 @@ const Login = () => {
   return (
     <CenteredContainer>
       <FormContainer>
-        <Header>Login</Header>
-        <LoginForm onSubmit={handleSubmit}>
+        <Header>Signup</Header>
+        <SignupForm onSubmit={handleSubmit}>
           <FormInput
             type="text"
-            placeholder="email"
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <FormInput
+            type="text"
+            placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -132,18 +134,15 @@ const Login = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <SelectRole value={role} onChange={(e) => setRole(e.target.value)}>
-            <option value="user">User</option>
-            <option value="clubAdmin">Club Admin</option>
-          </SelectRole>
-          <SubmitButton type="submit">Login</SubmitButton>
-        </LoginForm>
-        <CreateAccountLink>
-          Don't have an account? <Link to="/signup">Create Account</Link>
-        </CreateAccountLink>
+          
+          <SubmitButton type="submit">Signup</SubmitButton>
+        </SignupForm>
+        <LoginLink>
+          Already have an account? <Link to="/login">Login</Link>
+        </LoginLink>
       </FormContainer>
     </CenteredContainer>
   );
 };
 
-export default Login;
+export default Signup;

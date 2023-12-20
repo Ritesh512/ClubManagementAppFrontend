@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import {
   HiOutlineCalendarDays,
@@ -54,6 +54,11 @@ const StyledNavLink = styled(NavLink)`
 `;
 
 function MainNav() {
+  const auth = localStorage.getItem("user");
+  const naviagte = useNavigate();
+  if (!auth) {
+    naviagte("/signup");
+  }
   return (
     <nav>
       <NavList>
@@ -63,30 +68,50 @@ function MainNav() {
             <span>Home</span>
           </StyledNavLink>
         </li>
+        {JSON.parse(auth).role === "user" ? (
+          <>
+            <li>
+              <StyledNavLink to="/bookings">
+                <HiOutlineCalendarDays />
+                <span>Clubs</span>
+              </StyledNavLink>
+            </li>
+            <li>
+              <StyledNavLink to="/cabins">
+                <AiFillLike />
+                <span>Likes</span>
+              </StyledNavLink>
+            </li>
+            <li>
+              <StyledNavLink to="/users">
+                <MdOutlineDataSaverOn />
+                <span>Saved</span>
+              </StyledNavLink>
+            </li>
+          </>
+        ) : (
+          <>
+            <li>
+              <StyledNavLink to="/club/:clubName/post">
+                <HiOutlineCog6Tooth />
+                <span>Add Post</span>
+              </StyledNavLink>
+            </li>
+            <li>
+              <StyledNavLink to="/settings">
+                <HiOutlineCog6Tooth />
+                <span>Club Posts</span>
+              </StyledNavLink>
+            </li>
+            
+          </>
+        )}
         <li>
-          <StyledNavLink to="/bookings">
-            <HiOutlineCalendarDays />
-            <span>Clubs</span>
-          </StyledNavLink>
-        </li>
-        <li>
-          <StyledNavLink to="/cabins">
-            <AiFillLike />
-            <span>Likes</span>
-          </StyledNavLink>
-        </li>
-        <li>
-          <StyledNavLink to="/users">
-            <MdOutlineDataSaverOn />
-            <span>Saved</span>
-          </StyledNavLink>
-        </li>
-        <li>
-          <StyledNavLink to="/settings">
-            <HiOutlineCog6Tooth />
-            <span>Settings</span>
-          </StyledNavLink>
-        </li>
+              <StyledNavLink to="/settings">
+                <HiOutlineCog6Tooth />
+                <span>Settings</span>
+              </StyledNavLink>
+            </li>
       </NavList>
     </nav>
   );

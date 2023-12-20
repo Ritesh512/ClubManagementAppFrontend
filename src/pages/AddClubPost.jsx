@@ -68,6 +68,7 @@ const RemoveButton = styled.button`
 
 const AddClubPost = () => {
   const [title, setTitle] = useState('');
+  const [clubName, setClubName] = useState('');
   const [description, setDescription] = useState('');
   const [coordinators, setCoordinators] = useState([{ name: '', email: '', phone: '' }]);
   const navigate = useNavigate();
@@ -82,10 +83,31 @@ const AddClubPost = () => {
     setCoordinators([...coordinators, { name: '', email: '', phone: '' }]);
   };
 
-  const handleAddPost = () => {
+  const handleAddPost = async () => {
     console.log('Title:', title);
     console.log('Description:', description);
     console.log('Coordinators:', coordinators);
+    try{
+        const postData = {clubName,title,description,coordinators};
+        const response = await fetch('http://localhost:8000/clubPosts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(postData),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const responseData = await response.json();
+
+    // Handle the response data as needed
+    console.log('Post added successfully:', responseData);
+    }catch (error) {
+        console.error('Error adding post:', error.message);
+    }
     navigate("/");
   };
 
@@ -105,6 +127,14 @@ const AddClubPost = () => {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+          />
+        </InputGroup>
+        <InputGroup>
+          <Label>ClubName:</Label>
+          <Input
+            type="text"
+            value={clubName}
+            onChange={(e) => setClubName(e.target.value)}
           />
         </InputGroup>
         <InputGroup>
