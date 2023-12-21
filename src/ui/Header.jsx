@@ -20,7 +20,7 @@ function Header() {
   return (
     <StyledHeader>
       HEADER
-      <Link onClick={logout} to="/SignUp">
+      <Link onClick={logout} to="/login">
         Logout ({JSON.parse(auth).name})
       </Link>
     </StyledHeader>

@@ -11,12 +11,52 @@ function Dashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [like,setLike] = useState(false);
+  const [save,setSaved] = useState(false);
+  const [likedPostsSet, setLikedPostsSet] = useState(new Set());
+  const [savedPostsSet, setSavedPostsSet] = useState(new Set());
+
+  const auth = JSON.parse(localStorage.getItem("user"));
+  const userID=auth._id;
 
   const handleSearch = (query) => {
     setSearchQuery(query);
   };
-  console.log(searchQuery);
-  const arr = [1, 2, 3, 4, 5];
+
+  
+  useEffect(function(){
+    const fetchUserDetails = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/getUserDetails?userID=${userID}`);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const userData = await response.json();
+
+        // Assuming userData contains likedPostIds and savedPostIds
+        setLikedPostsSet(new Set(userData.likedPostIds));
+        setSavedPostsSet(new Set(userData.savedPostIds));
+        localStorage.setItem("userData",JSON.stringify(userData));
+        console.log(JSON.stringify(userData));
+      } catch (error) {
+        console.error('Error fetching user details:', error.message);
+      }
+    };
+
+    fetchUserDetails();
+  },[like,save])
+
+  function handleLike(){
+    setLike(like=>!like);
+    
+  }
+
+  function handleSave(){
+    setSaved(save=>!save);
+  }
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,6 +85,7 @@ function Dashboard() {
     fetchData();
   }, []);
 
+
   console.log(data);
   if (loading) {
     return <Spinner />;
@@ -71,6 +112,10 @@ function Dashboard() {
             description={data.description}
             coordinators={data.coordinators}
             clubName={data.clubName}
+            setHandleLike={handleLike}
+            setHandleSave = {handleSave}
+            likeByUser = {likedPostsSet.has(data._id)}
+            saveByUser = {savedPostsSet.has(data._id)}
           />
         ))}
       </Row>

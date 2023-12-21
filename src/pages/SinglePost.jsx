@@ -1,14 +1,16 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import { CgProfile } from "react-icons/cg";
 import { AiFillLike, AiOutlineLike } from "react-icons/ai";
 import { VscComment } from "react-icons/vsc";
 import { FiShare2 } from "react-icons/fi";
+import { FaBookmark, FaRegBookmark } from "react-icons/fa";
 
 import { MdOutlineDataSaverOn } from "react-icons/md";
 import { useState } from "react";
-import { useParams } from 'react-router-dom'; 
+import { useParams } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
+import Spinner from "../ui/Spinner";
 
 const CardContainer = styled.div`
   width: 600px;
@@ -81,11 +83,57 @@ const StyledInput = styled.input`
   }
 `;
 
+const CoordinatorInfoContainer = styled.div`
+  display: flex;
+  align-items: center;
+
+  p {
+    margin: 0;
+    margin-right: 10px;
+    margin-bottom: 10px;
+  }
+`;
+
 const SinglePost = () => {
   const [isliked, setLike] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const [iscomment, setIsComment] = useState(false);
   const [comment, setComment] = useState("");
   const { id } = useParams();
+
+  const [likedPostsSet, setLikedPostsSet] = useState(new Set());
+  const [savedPostsSet, setSavedPostsSet] = useState(new Set());
+
+  const user = JSON.parse(localStorage.getItem("user"));
+  const userData = JSON.parse(localStorage.getItem("userData"));
+
+  const [clubPost, setClubPost] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchClubPostDetails = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/clubpost/${id}`);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setClubPost(data.clubPost);
+        setLoading(false);
+
+        if(user.role==="user"){
+          setLikedPostsSet(new Set(userData.likedPostIds));
+          setSavedPostsSet(new Set(userData.savedPostIds));
+        }
+        // setLike(userData.likedPostIds.has(data.clubPost._id));
+      } catch (error) {
+        console.error("Error fetching club post details:", error);
+      }
+    };
+    fetchClubPostDetails();
+  }, []);
 
   function handleiscomment() {
     setIsComment((iscomment) => !iscomment);
@@ -97,55 +145,70 @@ const SinglePost = () => {
     setIsComment((iscomment) => !iscomment);
   }
 
-  function handleShare(){
+  function handleShare() {
     const shareLink = `http://localhost:5173/posts/${id}`;
 
-    navigator.clipboard.writeText(shareLink)
+    navigator.clipboard
+      .writeText(shareLink)
       .then(() => {
         toast.success("Link Copied", {
-            position: toast.POSITION.TOP_RIGHT,
-          });
+          position: toast.POSITION.TOP_RIGHT,
+        });
       })
       .catch((error) => {
-        console.error('Failed to copy link to clipboard', error);
+        console.error("Failed to copy link to clipboard", error);
       });
+  }
+
+  if (loading) {
+    return <Spinner />;
   }
 
   return (
     <CardContainer>
       <LogoAndName>
         <CgProfile style={{ fontSize: "3rem" }} />
-        <ClubName>Club Name</ClubName>
+        <ClubName>{clubPost.clubName}</ClubName>
       </LogoAndName>
-      <Description>
-        Lorem Ipsum is simply dummy text of the printing and typesetting
-        industry. Lorem Ipsum has been the industry's standard dummy text ever
-        since the 1500s, when an unknown printer took a galley of type and
-        scrambled it to make a type specimen book. It has survived not only five
-        centuries, but also the leap into electronic typesetting, remaining
-        essentially unchanged.
-      </Description>
+      <h3>{clubPost.title}</h3>
+      <Description>{clubPost.description}</Description>
+      {clubPost.coordinators.map((cor, key) => (
+
+        <CoordinatorInfoContainer key={cor.id}>
+          <p>Contact {key + 1}: </p>
+          <p>{cor.name}</p>
+          <p>{cor.email}</p>
+          <p>{cor.phone}</p>
+        </CoordinatorInfoContainer>
+      ))}
       <Actions>
-        {!isliked ? (
+        {user.role === "user" && (
           <ActionButton onClick={(e) => setLike(!isliked)}>
-            <AiOutlineLike style={{ fontSize: "2rem" }} />
-          </ActionButton>
-        ) : (
-          <ActionButton onClick={(e) => setLike(!isliked)}>
-            <AiFillLike style={{ fontSize: "2rem" }} />
+            {likedPostsSet.has(clubPost._id) ? (
+              <AiFillLike style={{ fontSize: "2rem" }} />
+            ) : (
+              <AiOutlineLike style={{ fontSize: "2rem" }} />
+            )}
           </ActionButton>
         )}
 
         <ActionButton onClick={handleiscomment}>
-          <VscComment  style={{ fontSize: "2rem" }} />
+          <VscComment style={{ fontSize: "2rem" }} />
         </ActionButton>
-        <ActionButton>
-          <MdOutlineDataSaverOn style={{ fontSize: "2rem" }} />
-        </ActionButton>
+        {user.role === "user" && (
+          <ActionButton onClick={(e) => setIsSaved(!isSaved)}>
+            {!savedPostsSet.has(clubPost._id) ? (
+              <FaRegBookmark style={{ fontSize: "2rem" }} />
+            ) : (
+              <FaBookmark style={{ fontSize: "2rem" }} />
+            )}
+          </ActionButton>
+        )}
+
         <ActionButton onClick={handleShare}>
-          <FiShare2  style={{ fontSize: "2rem" }} />
+          <FiShare2 style={{ fontSize: "2rem" }} />
         </ActionButton>
-        <ActionButton>Join</ActionButton>
+        {user.role === "user" && <ActionButton>Join</ActionButton>}
       </Actions>
       {iscomment ? (
         <>

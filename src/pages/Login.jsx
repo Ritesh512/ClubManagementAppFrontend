@@ -107,12 +107,18 @@ const Login = () => {
             toast.success("Login Successfully", {
               position: toast.POSITION.TOP_RIGHT,
             });
+            if(result.user.role==="admin"){
+              console.log(result.user.role);
+              navigate("/club/:clubPosts")
+            }else{
+              navigate("/");
+            }
         }else{
           toast.warning(result.error, {
             position: toast.POSITION.TOP_RIGHT,
           });
         }
-    navigate("/");
+    
   };
 
   return (
@@ -134,7 +140,7 @@ const Login = () => {
           />
           <SelectRole value={role} onChange={(e) => setRole(e.target.value)}>
             <option value="user">User</option>
-            <option value="clubAdmin">Club Admin</option>
+            <option value="admin">Club Admin</option>
           </SelectRole>
           <SubmitButton type="submit">Login</SubmitButton>
         </LoginForm>

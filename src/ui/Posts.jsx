@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import { CgProfile } from "react-icons/cg";
 import { AiFillLike, AiOutlineLike } from "react-icons/ai";
@@ -11,7 +11,7 @@ import { ToastContainer, toast } from "react-toastify";
 import { FaBookmark, FaRegBookmark } from "react-icons/fa";
 
 const CardContainer = styled.div`
-  width: 600px;
+  width: 800px;
   border: 1px solid #ccc;
   border-radius: 8px;
   padding: 16px;
@@ -92,22 +92,83 @@ const CoordinatorInfoContainer = styled.div`
   }
 `;
 
-const Posts = ({ id, title, description, coordinators, clubName }) => {
-  const [isliked, setLike] = useState(false);
+const CommentsContainer = styled.div`
+  margin-top: 20px;
+`;
+
+const CommentBox = styled.div`
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+`;
+
+const CommentAuthor = styled.span`
+  font-weight: bold;
+  margin-right: 5px;
+`;
+
+const Posts = ({ id, title, description, coordinators, clubName,setHandleLike,setHandleSave,likeByUser,
+  saveByUser }) => {
+  const [isliked, setLike] = useState(likeByUser);
   const [iscomment, setIsComment] = useState(false);
   const [comment, setComment] = useState("");
-  const [isSaved, setIsSaved] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [isSaved, setIsSaved] = useState(saveByUser);
   const navigate = useNavigate();
-  const auth = localStorage.getItem("user");  
+  const auth = localStorage.getItem("user");
 
   function handleiscomment() {
     setIsComment((iscomment) => !iscomment);
   }
 
-  function addComment() {
-    alert(comment);
+  const fetchComments = async () => {
+    try {
+      const response = await fetch(`http://localhost:8000/getComments/${id}`); // Replace with actual endpoint
+      if (response.ok) {
+        const data = await response.json();
+        setComments(data);
+        console.log(data);
+      } else {
+        console.error("Failed to fetch comments:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchComments();
+  }, [iscomment]);
+
+  async function addComment() {
+    // alert(comment);
     console.log(comment);
     setIsComment((iscomment) => !iscomment);
+    const userId = JSON.parse(auth)._id;
+    const name = JSON.parse(auth).name;
+
+    try {
+      const response = await fetch(`http://localhost:8000/addComment/${id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId, name, comment }),
+      });
+
+      if (response.ok) {
+        // Comment added successfully, you can handle the response data here
+        const updatedPost = await response.json();
+        console.log("Comment added successfully:", updatedPost);
+      } else {
+        // Handle error cases
+        console.error("Failed to add comment:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
+    setComment("");
   }
 
   function handleShare() {
@@ -125,11 +186,11 @@ const Posts = ({ id, title, description, coordinators, clubName }) => {
       });
   }
 
-  const handleLink = async () => {
-    // if(isliked) return;
+  const handleLike = async () => {
+    setHandleLike(isliked);
     setLike((like) => !like);
-    const userID = JSON.parse(auth)._id; 
-    const postID = id; 
+    const userID = JSON.parse(auth)._id;
+    const postID = id;
 
     try {
       const response = await fetch("http://localhost:8000/userLike", {
@@ -152,29 +213,29 @@ const Posts = ({ id, title, description, coordinators, clubName }) => {
   };
 
   const handleSavePost = async () => {
-    setIsSaved(save=>!save);
+    setHandleSave();
+    setIsSaved((save) => !save);
     // if(isSaved) return ;
-    const userID = JSON.parse(auth)._id; 
-    const postID = id; 
-    
-  
+    const userID = JSON.parse(auth)._id;
+    const postID = id;
+
     try {
-      const response = await fetch('http://localhost:8000/saveUserPost', {
-        method: 'POST',
+      const response = await fetch("http://localhost:8000/saveUserPost", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ userID, postID, clubName, title }),
       });
-  
+
       if (response.ok) {
         const data = await response.json();
         console.log(data); // You can handle the response data as needed
       } else {
-        console.error('Failed to save the post');
+        console.error("Failed to save the post");
       }
     } catch (error) {
-      console.error('Error while saving the post:', error);
+      console.error("Error while saving the post:", error);
     }
   };
 
@@ -199,11 +260,11 @@ const Posts = ({ id, title, description, coordinators, clubName }) => {
 
       <Actions>
         {!isliked ? (
-          <ActionButton onClick={handleLink}>
+          <ActionButton onClick={handleLike}>
             <AiOutlineLike style={{ fontSize: "2rem" }} />
           </ActionButton>
         ) : (
-          <ActionButton onClick={handleLink}>
+          <ActionButton onClick={handleLike}>
             <AiFillLike style={{ fontSize: "2rem" }} />
           </ActionButton>
         )}
@@ -228,19 +289,42 @@ const Posts = ({ id, title, description, coordinators, clubName }) => {
         <ActionButton>Join</ActionButton>
       </Actions>
       {iscomment ? (
-        <>
-          <StyledInput
-            type="text"
-            placeholder="Your comment....!"
-            onChange={(e) => setComment(e.target.value)}
-          />
-          <ActionButton onClick={addComment}>Add</ActionButton>
-        </>
+        <div>
+          <>
+            <StyledInput
+              type="text"
+              placeholder="Your comment....!"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+            />
+            <ActionButton onClick={addComment}>Add</ActionButton>
+          </>
+          {comments.length > 0 && (
+            <CommentsContainer>
+              <h3>Top Comments</h3>
+              {comments.slice(0, 2).map((c) => (
+                <CommentBox key={c._id}>
+                  <p>
+                    <CommentAuthor>{c.name}:</CommentAuthor> {c.comment}
+                    <span style={{ float: "right", color: "#888" }}>
+                      {formatDate(c.date)}
+                    </span>
+                  </p>
+                </CommentBox>
+              ))}
+            </CommentsContainer>
+          )}
+        </div>
       ) : (
         ""
       )}
     </CardContainer>
   );
+};
+
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
 };
 
 export default Posts;

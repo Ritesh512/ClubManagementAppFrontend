@@ -14,9 +14,13 @@ import AppLayout from "./ui/AppLayout";
 import SinglePost from "./pages/SinglePost";
 import AddClubPost from "./pages/AddClubPost";
 import Private from "./ui/Private";
+import EditClubPost from "./pages/EditClubPost";
+import CreateAdmin from "./pages/CreateAdmin";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ClubPosts from "./pages/ClubPosts";
+
 
 function App() {
   return (
@@ -28,18 +32,22 @@ function App() {
             <Route element={<AppLayout />}>
               <Route index element={<Navigate replace to="dashboard" />} />
               <Route path="dashboard" element={<Dashboard />} />
-              <Route path="bookings" element={<Clubs />} />
-              <Route path="cabins" element={<Likes />} />
+              <Route path="clubs" element={<Clubs />} />
+              <Route path="likes" element={<Likes />} />
               <Route path="users" element={<Saved />} />
               <Route path="settings" element={<Settings />} />
               <Route path="account" element={<Account />} />
               <Route path="posts/:id" element={<SinglePost />} />
               <Route path="club/:clubName/post" element={<AddClubPost />} />
+              <Route path="/club/:clubName/post/:postId" element={<EditClubPost />} />
+              <Route path="club/:clubPosts" element={<ClubPosts />} />
             </Route>
           </Route>
 
+
           <Route path="login" element={<Login />} />
           <Route path="signup" element={<Signup />} />
+          <Route path="createAdmin" element={<CreateAdmin />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </BrowserRouter>

@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const PageContainer = styled.div`
   max-width: 600px;
@@ -47,7 +47,7 @@ const Textarea = styled.textarea`
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 16px;
-  resize: vertical; /* Allow vertical resizing */
+  resize: vertical;
 `;
 
 const RemoveButton = styled.button`
@@ -65,15 +65,45 @@ const RemoveButton = styled.button`
   }
 `;
 
-const AddClubPost = () => {
+const EditClubPost = () => {
   const [title, setTitle] = useState("");
-  // const [clubName, setClubName] = useState(JSON.parse(localStorage.getItem("user").clubName));
   const [description, setDescription] = useState("");
   const [coordinators, setCoordinators] = useState([
     { name: "", email: "", phone: "" },
   ]);
   const navigate = useNavigate();
+  const { postId } = useParams();
   const auth = localStorage.getItem("user");
+
+  useEffect(() => {
+    const fetchPostDetails = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/clubPosts/${postId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const postData = await response.json();
+
+        // Update the component state with fetched post details
+        setTitle(postData.title);
+        setDescription(postData.description);
+        setCoordinators(postData.coordinators);
+      } catch (error) {
+        console.error("Error fetching post details:", error.message);
+      }
+    };
+
+    // Call the fetchPostDetails function when the component mounts
+    fetchPostDetails();
+  }, [postId]);
 
   const handleInputChange = (index, field, value) => {
     const updatedCoordinators = [...coordinators];
@@ -85,38 +115,34 @@ const AddClubPost = () => {
     setCoordinators([...coordinators, { name: "", email: "", phone: "" }]);
   };
 
-  const handleAddPost = async () => {
-    console.log("Title:", title);
-    console.log("Description:", description);
-    console.log("Coordinators:", coordinators);
-    const clubName = JSON.parse(auth).clubName
-    const adminID = JSON.parse(auth)._id;
-
+  const handleUpdatePost = async () => {
     try {
-      const postData = { adminID,clubName, title, description, coordinators };
-      console.log(postData);
-      const response = await fetch("http://localhost:8000/clubPosts", {
-        method: "POST",
+      const response = await fetch(`http://localhost:8000/update/${postId}`, {
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json",
-          authorization: `bearer ${JSON.parse(localStorage.getItem("token"))}`,
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`,
         },
-        body: JSON.stringify(postData),
+        body: JSON.stringify({
+          title,
+          description,
+          coordinators,
+        }),
       });
-
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      const responseData = await response.json();
+      const updatedPost = await response.json();
+      console.log('Post updated successfully:', updatedPost);
 
-      // Handle the response data as needed
-      console.log("Post added successfully:", responseData);
+      // Handle the updated post as needed, e.g., update local state or trigger a rerender
+      navigate("/club/:clubPosts");
     } catch (error) {
-      console.error("Error adding post:", error.message);
+      console.error('Error updating post:', error.message);
+      // Handle error, show a message to the user, etc.
     }
-    navigate("/club/:clubPosts");
   };
 
   const handleRemoveCoordinator = (index) => {
@@ -127,7 +153,7 @@ const AddClubPost = () => {
 
   return (
     <PageContainer>
-      <h1>Add Club Post</h1>
+      <h1>Edit Club Post</h1>
       <FormContainer>
         <InputGroup>
           <Label>Title:</Label>
@@ -193,10 +219,10 @@ const AddClubPost = () => {
         <AddButton onClick={handleAddCoordinator}>Add Coordinator</AddButton>
       </FormContainer>
       <FormContainer>
-        <AddButton onClick={handleAddPost}>Add Post</AddButton>
+        <AddButton onClick={handleUpdatePost}>Update Post</AddButton>
       </FormContainer>
     </PageContainer>
   );
 };
 
-export default AddClubPost;
+export default EditClubPost;

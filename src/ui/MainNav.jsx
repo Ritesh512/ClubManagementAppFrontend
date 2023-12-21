@@ -62,22 +62,22 @@ function MainNav() {
   return (
     <nav>
       <NavList>
-        <li>
-          <StyledNavLink to="/dashboard">
-            <HiOutlineHome />
-            <span>Home</span>
-          </StyledNavLink>
-        </li>
         {JSON.parse(auth).role === "user" ? (
           <>
             <li>
-              <StyledNavLink to="/bookings">
+              <StyledNavLink to="/dashboard">
+                <HiOutlineHome />
+                <span>Home</span>
+              </StyledNavLink>
+            </li>
+            <li>
+              <StyledNavLink to="/clubs">
                 <HiOutlineCalendarDays />
                 <span>Clubs</span>
               </StyledNavLink>
             </li>
             <li>
-              <StyledNavLink to="/cabins">
+              <StyledNavLink to="/likes">
                 <AiFillLike />
                 <span>Likes</span>
               </StyledNavLink>
@@ -91,27 +91,26 @@ function MainNav() {
           </>
         ) : (
           <>
-            <li>
-              <StyledNavLink to="/club/:clubName/post">
-                <HiOutlineCog6Tooth />
-                <span>Add Post</span>
-              </StyledNavLink>
-            </li>
-            <li>
-              <StyledNavLink to="/settings">
+          <li>
+              <StyledNavLink to="/club/clubPosts">
                 <HiOutlineCog6Tooth />
                 <span>Club Posts</span>
               </StyledNavLink>
             </li>
-            
+            <li>
+              <StyledNavLink to={`/club/${JSON.parse(auth).clubName}/post`}>
+                <HiOutlineCog6Tooth />
+                <span>Add Post</span>
+              </StyledNavLink>
+            </li>
           </>
         )}
         <li>
-              <StyledNavLink to="/settings">
-                <HiOutlineCog6Tooth />
-                <span>Settings</span>
-              </StyledNavLink>
-            </li>
+          <StyledNavLink to="/settings">
+            <HiOutlineCog6Tooth />
+            <span>Settings</span>
+          </StyledNavLink>
+        </li>
       </NavList>
     </nav>
   );
