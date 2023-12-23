@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import styled from "styled-components";
+import ReactPaginate from "react-paginate";
+import "./Pagination.css";
 
 const Table = styled.table`
   width: 100%;
@@ -33,30 +35,61 @@ const JoinButton = styled.button`
   }
 `;
 
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+`;
+
+const PaginationButton = styled.a`
+  cursor: pointer;
+  margin: 0 5px;
+  padding: 8px 16px;
+  background-color: #3498db;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: #2980b9;
+  }
+`;
+
+const PaginationWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+`;
+
 const Clubs = () => {
-  // Sample data for clubs
   const navigate = useNavigate();
   const [admins, setAdmins] = useState([]);
   const user = JSON.parse(localStorage.getItem("user"));
   const userClub = JSON.parse(localStorage.getItem("userClub"));
   const [clubUser, setClubUser] = useState(new Set());
+  const [pageNumber, setPageNumber] = useState(0);
+  const clubsPerPage = 5;
 
   useEffect(() => {
     const userID = user._id;
-    console.log(userID);
     const fetchAdmins = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/user/getClubName/${userID}`,{
-          headers: {
-            "Content-Type": "application/json",
-            authorization: `bearer ${JSON.parse(localStorage.getItem("token"))}`,
-          },
-        }); // Replace with your actual API endpoint
+        const response = await fetch(
+          `http://localhost:8000/user/getClubName/${userID}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              authorization: `bearer ${JSON.parse(
+                localStorage.getItem("token")
+              )}`,
+            },
+          }
+        );
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
-        console.log(data);
         setAdmins(data.formattedAdmins);
         setClubUser(new Set(data.userDetails));
       } catch (error) {
@@ -84,7 +117,9 @@ const Clubs = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          authorization: `bearer ${JSON.parse(localStorage.getItem("token"))}`,
+          authorization: `bearer ${JSON.parse(
+            localStorage.getItem("token")
+          )}`,
         },
         body: JSON.stringify({
           userID,
@@ -113,6 +148,12 @@ const Clubs = () => {
     }
   }
 
+  const pageCount = Math.ceil(admins.length / clubsPerPage);
+
+  const changePage = ({ selected }) => {
+    setPageNumber(selected);
+  };
+
   return (
     <div>
       <h2>Clubs Page</h2>
@@ -127,36 +168,60 @@ const Clubs = () => {
           </tr>
         </thead>
         <tbody>
-          {admins.map((club, index) => (
-            <tr key={club.srno}>
-              <Td>{index + 1}</Td>
-              <Td>{club.clubName}</Td>
-              <Td>{club.admin}</Td>
-              <Td>{club.email}</Td>
-              <Td>
-                {clubUser.has(club.id) ? (
-                  <JoinButton
-                    onClick={() => {
-                      toast.warning("Already a Member", {
-                        position: toast.POSITION.TOP_RIGHT,
-                        autoClose: 1000,
-                      });
-                    }}
-                  >
-                    Joined
-                  </JoinButton>
-                ) : (
-                  <JoinButton
-                    onClick={() => handleJoinClick(club.id, club.clubName)}
-                  >
-                    Join
-                  </JoinButton>
-                )}
-              </Td>
-            </tr>
-          ))}
+          {admins
+            .slice(pageNumber * clubsPerPage, (pageNumber + 1) * clubsPerPage)
+            .map((club, index) => (
+              <tr key={club.srno}>
+                <Td>{index + 1}</Td>
+                <Td>{club.clubName}</Td>
+                <Td>{club.admin}</Td>
+                <Td>{club.email}</Td>
+                <Td>
+                  {clubUser.has(club.id) ? (
+                    <JoinButton
+                      onClick={() => {
+                        toast.warning("Already a Member", {
+                          position: toast.POSITION.TOP_RIGHT,
+                          autoClose: 1000,
+                        });
+                      }}
+                    >
+                      Joined
+                    </JoinButton>
+                  ) : (
+                    <JoinButton
+                      onClick={() => handleJoinClick(club.id, club.clubName)}
+                    >
+                      Join
+                    </JoinButton>
+                  )}
+                </Td>
+              </tr>
+            ))}
         </tbody>
       </Table>
+      <PaginationWrapper>
+        <PaginationContainer>
+          <ReactPaginate
+            nextLabel="next >"
+            onPageChange={changePage}
+            pageCount={pageCount}
+            previousLabel="< previous"
+            pageClassName="page-item"
+            pageLinkClassName="page-link"
+            previousClassName="page-item"
+            previousLinkClassName="page-link"
+            nextClassName="page-item"
+            nextLinkClassName="page-link"
+            breakLabel="..."
+            breakClassName="page-item"
+            breakLinkClassName="page-link"
+            containerClassName="pagination"
+            activeClassName="active"
+            renderOnZeroPageCount={null}
+          />
+        </PaginationContainer>
+      </PaginationWrapper>
     </div>
   );
 };

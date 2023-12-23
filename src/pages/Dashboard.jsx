@@ -5,34 +5,69 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import SearchBar from "../ui/Searchbar";
 import Spinner from "../ui/Spinner";
+import ReactPaginate from "react-paginate";
+import "./Pagination.css";
+
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+`;
+
+const PaginationButton = styled.a`
+  cursor: pointer;
+  margin: 0 5px;
+  padding: 8px 16px;
+  background-color: #3498db;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: #2980b9;
+  }
+`;
+
+const PaginationWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+`;
 
 function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [data, setData] = useState(null);
+  const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [like,setLike] = useState(false);
-  const [save,setSaved] = useState(false);
+  const [like, setLike] = useState(false);
+  const [save, setSaved] = useState(false);
   const [likedPostsSet, setLikedPostsSet] = useState(new Set());
   const [savedPostsSet, setSavedPostsSet] = useState(new Set());
+  const [pageNumber, setPageNumber] = useState(0);
+  const postsPerPage = 5;
 
   const auth = JSON.parse(localStorage.getItem("user"));
-  const userID=auth._id;
+  const userID = auth._id;
 
   const handleSearch = (query) => {
     setSearchQuery(query);
   };
 
-  
-  useEffect(function(){
+  useEffect(function () {
     const fetchUserDetails = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/user/getUserDetails/like/save?userID=${userID}`,{
-          headers: {
-            "Content-Type": "application/json",
-            authorization: `bearer ${JSON.parse(localStorage.getItem("token"))}`,
-          },
-        });
+        const response = await fetch(
+          `http://localhost:8000/user/getUserDetails/like/save?userID=${userID}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              authorization: `bearer ${JSON.parse(
+                localStorage.getItem("token")
+              )}`,
+            },
+          }
+        );
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -43,25 +78,23 @@ function Dashboard() {
         // Assuming userData contains likedPostIds and savedPostIds
         setLikedPostsSet(new Set(userData.likedPostIds));
         setSavedPostsSet(new Set(userData.savedPostIds));
-        localStorage.setItem("userData",JSON.stringify(userData));
+        localStorage.setItem("userData", JSON.stringify(userData));
         console.log(JSON.stringify(userData));
       } catch (error) {
-        console.error('Error fetching user details:', error.message);
+        console.error("Error fetching user details:", error.message);
       }
     };
 
     fetchUserDetails();
-  },[like,save])
+  }, [like, save]);
 
-  function handleLike(){
-    setLike(like=>!like);
-    
+  function handleLike() {
+    setLike((like) => !like);
   }
 
-  function handleSave(){
-    setSaved(save=>!save);
+  function handleSave() {
+    setSaved((save) => !save);
   }
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -69,7 +102,9 @@ function Dashboard() {
         const response = await fetch("http://localhost:8000/user/clubPosts", {
           headers: {
             "Content-Type": "application/json",
-            authorization: `bearer ${JSON.parse(localStorage.getItem("token"))}`,
+            authorization: `bearer ${JSON.parse(
+              localStorage.getItem("token")
+            )}`,
           },
         });
 
@@ -89,8 +124,12 @@ function Dashboard() {
     fetchData();
   }, []);
 
+  const pageCount = Math.ceil(data.length / postsPerPage);
 
-  console.log(data);
+  const changePage = ({ selected }) => {
+    setPageNumber(selected);
+  };
+
   if (loading) {
     return <Spinner />;
   }
@@ -105,24 +144,48 @@ function Dashboard() {
         <Heading as="h1">Dashboard</Heading>
       </Row>
       <Row>
-        <SearchBar onSearch={handleSearch} />
+        {/* <SearchBar onSearch={handleSearch} /> */}
       </Row>
       <Row>
-        {data.map((data) => (
-          <Posts
-            key={data._id}
-            id={data._id}
-            title={data.title}
-            description={data.description}
-            coordinators={data.coordinators}
-            clubName={data.clubName}
-            setHandleLike={handleLike}
-            setHandleSave = {handleSave}
-            likeByUser = {likedPostsSet.has(data._id)}
-            saveByUser = {savedPostsSet.has(data._id)}
-          />
-        ))}
+        {data
+          .slice(pageNumber * postsPerPage, (pageNumber + 1) * postsPerPage)
+          .map((post) => (
+            <Posts
+              key={post._id}
+              id={post._id}
+              title={post.title}
+              description={post.description}
+              coordinators={post.coordinators}
+              clubName={post.clubName}
+              setHandleLike={handleLike}
+              setHandleSave={handleSave}
+              likeByUser={likedPostsSet.has(post._id)}
+              saveByUser={savedPostsSet.has(post._id)}
+            />
+          ))}
       </Row>
+      <PaginationWrapper>
+        <PaginationContainer>
+          <ReactPaginate
+            nextLabel="next >"
+            onPageChange={changePage}
+            pageCount={pageCount}
+            previousLabel="< previous"
+            pageClassName="page-item"
+            pageLinkClassName="page-link"
+            previousClassName="page-item"
+            previousLinkClassName="page-link"
+            nextClassName="page-item"
+            nextLinkClassName="page-link"
+            breakLabel="..."
+            breakClassName="page-item"
+            breakLinkClassName="page-link"
+            containerClassName="pagination"
+            activeClassName="active"
+            renderOnZeroPageCount={null}
+          />
+        </PaginationContainer>
+      </PaginationWrapper>
     </>
   );
 }
