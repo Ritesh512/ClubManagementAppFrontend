@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const PageContainer = styled.div`
   max-width: 600px;
@@ -78,7 +79,7 @@ const EditClubPost = () => {
   useEffect(() => {
     const fetchPostDetails = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/clubPosts/${postId}`, {
+        const response = await fetch(`http://localhost:8000/admin/clubPost/getbyId/${postId}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -117,7 +118,7 @@ const EditClubPost = () => {
 
   const handleUpdatePost = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/update/${postId}`, {
+      const response = await fetch(`http://localhost:8000/admin/update/${postId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -136,9 +137,12 @@ const EditClubPost = () => {
 
       const updatedPost = await response.json();
       console.log('Post updated successfully:', updatedPost);
+      toast.success( "Post Updated successfully", {
+        position: toast.POSITION.TOP_RIGHT,
+      });
 
       // Handle the updated post as needed, e.g., update local state or trigger a rerender
-      navigate("/club/:clubPosts");
+      navigate("/club/clubPosts");
     } catch (error) {
       console.error('Error updating post:', error.message);
       // Handle error, show a message to the user, etc.

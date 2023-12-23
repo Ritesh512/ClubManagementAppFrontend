@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import styled from "styled-components";
 
@@ -66,7 +67,8 @@ const CreateAdmin = () => {
     clubName: "",
     securityKey: "",
   });
-
+  const navigate = useNavigate();
+ 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
@@ -76,7 +78,7 @@ const CreateAdmin = () => {
     e.preventDefault();
     console.log("Form submitted:", formData);
     try{
-        const response = await fetch("http://localhost:8000/createAdmin", {
+        const response = await fetch("http://localhost:8000/super/createAdmin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -94,7 +96,7 @@ const CreateAdmin = () => {
         position: toast.POSITION.TOP_RIGHT,
         onClose: () => {
             setTimeout(() => {
-              window.location.reload();
+              navigate("/login")
             }, 5000);
           },
       });

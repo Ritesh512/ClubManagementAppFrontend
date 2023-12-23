@@ -78,7 +78,8 @@ const Settings = () => {
       const response = await fetch('http://localhost:8000/changePassword', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
+          authorization: `bearer ${JSON.parse(localStorage.getItem("token"))}`,
         },
         body: JSON.stringify({
           userId,

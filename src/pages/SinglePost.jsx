@@ -113,7 +113,12 @@ const SinglePost = () => {
   useEffect(() => {
     const fetchClubPostDetails = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/clubpost/${id}`);
+        const response = await fetch(`http://localhost:8000/user/clubpost/getbyId/${id}`,{
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `bearer ${JSON.parse(localStorage.getItem("token"))}`,
+          },
+        });
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);

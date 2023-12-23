@@ -27,7 +27,12 @@ function Dashboard() {
   useEffect(function(){
     const fetchUserDetails = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/getUserDetails?userID=${userID}`);
+        const response = await fetch(`http://localhost:8000/user/getUserDetails/like/save?userID=${userID}`,{
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `bearer ${JSON.parse(localStorage.getItem("token"))}`,
+          },
+        });
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -61,11 +66,10 @@ function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://localhost:8000/clubPosts", {
+        const response = await fetch("http://localhost:8000/user/clubPosts", {
           headers: {
-            authorization: `bearer ${JSON.parse(
-              localStorage.getItem("token")
-            )}`,
+            "Content-Type": "application/json",
+            authorization: `bearer ${JSON.parse(localStorage.getItem("token"))}`,
           },
         });
 

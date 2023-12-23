@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import Spinner from "../ui/Spinner";
 
 // Sample data for club posts
 const clubPostsData = [
@@ -51,10 +52,11 @@ const ClubPosts = () => {
   const navigate = useNavigate();
   const auth = localStorage.getItem("user");
   const [post, setPost] = useState([]);
+  const [isLoading,setIsLoading] = useState(false);
 
   const handleTitleClick = (postId) => {
     // Redirect to the post details page with postId
-    navigate(`/posts/${postId}`);
+    navigate(`/posts/view/${postId}`);
   };
 
   useEffect(() => {
@@ -62,8 +64,12 @@ const ClubPosts = () => {
       const adminID = JSON.parse(auth)._id;
       try {
         const response = await fetch(
-          `http://localhost:8000/adminPosts/${adminID}`
-        );
+          `http://localhost:8000/admin/adminPosts/${adminID}`,{
+            headers: {
+              "Content-Type": "application/json",
+              authorization: `bearer ${JSON.parse(localStorage.getItem("token"))}`,
+            },
+          });
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -71,9 +77,11 @@ const ClubPosts = () => {
 
         const data = await response.json();
         setPost(data.posts);
+        setIsLoading(true);
+        
       } catch (error) {
         console.error("Error fetching admin posts:", error);
-        // Handle errors (e.g., display an error message)
+        setIsLoading(false);
       }
     };
 
@@ -84,11 +92,12 @@ const ClubPosts = () => {
     console.log(postId);
     try {
       const response = await fetch(
-        `http://localhost:8000/clubPosts/${postId}`,
+        `http://localhost:8000/admin/delete/clubPosts/${postId}`,
         {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
+            authorization: `bearer ${JSON.parse(localStorage.getItem("token"))}`,
           },
         }
       );
@@ -114,8 +123,10 @@ const ClubPosts = () => {
   };
 
   function handleEdit(postId) {
-    navigate(`/club/${JSON.parse(auth).clubName}/post/${postId}`);
+    navigate(`/club/${JSON.parse(auth).clubName}/post/edit/${postId}`);
   }
+
+  if(!isLoading) return <Spinner />
 
   return (
     <div>

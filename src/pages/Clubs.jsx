@@ -46,7 +46,12 @@ const Clubs = () => {
     console.log(userID);
     const fetchAdmins = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/admins/${userID}`); // Replace with your actual API endpoint
+        const response = await fetch(`http://localhost:8000/user/getClubName/${userID}`,{
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `bearer ${JSON.parse(localStorage.getItem("token"))}`,
+          },
+        }); // Replace with your actual API endpoint
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
@@ -75,10 +80,11 @@ const Clubs = () => {
   async function handleJoinClick(clubID, clubName) {
     const userID = user._id;
     try {
-      const response = await fetch("http://localhost:8000/addClubMember", {
+      const response = await fetch("http://localhost:8000/user/join/club", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          authorization: `bearer ${JSON.parse(localStorage.getItem("token"))}`,
         },
         body: JSON.stringify({
           userID,

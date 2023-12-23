@@ -6,7 +6,6 @@ import Clubs from "./pages/Clubs";
 import Saved from "./pages/Saved";
 import Likes from "./pages/Likes";
 import Settings from "./pages/Settings";
-import Account from "./pages/Account";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import PageNotFound from "./pages/PageNotFound";
@@ -36,10 +35,9 @@ function App() {
               <Route path="likes" element={<Likes />} />
               <Route path="users" element={<Saved />} />
               <Route path="settings" element={<Settings />} />
-              <Route path="account" element={<Account />} />
-              <Route path="posts/:id" element={<SinglePost />} />
+              <Route path="posts/view/:id" element={<SinglePost />} />
               <Route path="club/:clubName/post" element={<AddClubPost />} />
-              <Route path="/club/:clubName/post/:postId" element={<EditClubPost />} />
+              <Route path="/club/:clubName/post/edit/:postId" element={<EditClubPost />} />
               <Route path="club/:clubPosts" element={<ClubPosts />} />
             </Route>
           </Route>

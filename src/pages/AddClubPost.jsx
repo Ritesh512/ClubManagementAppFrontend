@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const PageContainer = styled.div`
   max-width: 600px;
@@ -95,7 +96,7 @@ const AddClubPost = () => {
     try {
       const postData = { adminID,clubName, title, description, coordinators };
       console.log(postData);
-      const response = await fetch("http://localhost:8000/clubPosts", {
+      const response = await fetch("http://localhost:8000/admin/addClubPost", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -113,6 +114,9 @@ const AddClubPost = () => {
 
       // Handle the response data as needed
       console.log("Post added successfully:", responseData);
+      toast.success( "Post Created successfully", {
+        position: toast.POSITION.TOP_RIGHT,
+      });
     } catch (error) {
       console.error("Error adding post:", error.message);
     }

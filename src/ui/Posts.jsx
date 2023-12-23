@@ -124,7 +124,12 @@ const Posts = ({ id, title, description, coordinators, clubName,setHandleLike,se
 
   const fetchComments = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/getComments/${id}`); // Replace with actual endpoint
+      const response = await fetch(`http://localhost:8000/user/comment/getComments/${id}`,{
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `bearer ${JSON.parse(localStorage.getItem("token"))}`,
+        },
+      }); // Replace with actual endpoint
       if (response.ok) {
         const data = await response.json();
         setComments(data);
@@ -149,10 +154,11 @@ const Posts = ({ id, title, description, coordinators, clubName,setHandleLike,se
     const name = JSON.parse(auth).name;
 
     try {
-      const response = await fetch(`http://localhost:8000/addComment/${id}`, {
+      const response = await fetch(`http://localhost:8000/user/comment/addComment/${id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          authorization: `bearer ${JSON.parse(localStorage.getItem("token"))}`,
         },
         body: JSON.stringify({ userId, name, comment }),
       });
@@ -193,10 +199,11 @@ const Posts = ({ id, title, description, coordinators, clubName,setHandleLike,se
     const postID = id;
 
     try {
-      const response = await fetch("http://localhost:8000/userLike", {
+      const response = await fetch("http://localhost:8000/user/userLike", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          authorization: `bearer ${JSON.parse(localStorage.getItem("token"))}`,
         },
         body: JSON.stringify({ userID, postID, clubName, title }),
       });
@@ -220,10 +227,11 @@ const Posts = ({ id, title, description, coordinators, clubName,setHandleLike,se
     const postID = id;
 
     try {
-      const response = await fetch("http://localhost:8000/saveUserPost", {
+      const response = await fetch("http://localhost:8000/user/saveUserPost", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          authorization: `bearer ${JSON.parse(localStorage.getItem("token"))}`,
         },
         body: JSON.stringify({ userID, postID, clubName, title }),
       });
