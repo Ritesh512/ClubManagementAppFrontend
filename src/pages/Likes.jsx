@@ -77,7 +77,7 @@ const Likes = () => {
           <Td>{post.clubName}</Td>
           <Td>{post.title}</Td>
           <ActionTd>
-            <Link to={`/posts/${post.postID}`}>View</Link>
+            <Link to={`/posts/view/${post.postID}`}>View</Link>
           </ActionTd>
         </tr>
       );

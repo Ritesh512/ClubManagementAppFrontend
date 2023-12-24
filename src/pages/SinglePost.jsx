@@ -151,7 +151,7 @@ const SinglePost = () => {
   }
 
   function handleShare() {
-    const shareLink = `http://localhost:5173/posts/${id}`;
+    const shareLink = `http://localhost:5173/posts/view/${id}`;
 
     navigator.clipboard
       .writeText(shareLink)

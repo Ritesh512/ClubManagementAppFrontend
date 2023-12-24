@@ -9,6 +9,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { FaBookmark, FaRegBookmark } from "react-icons/fa";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 
 const CardContainer = styled.div`
   width: 800px;
@@ -108,8 +110,17 @@ const CommentAuthor = styled.span`
   margin-right: 5px;
 `;
 
-const Posts = ({ id, title, description, coordinators, clubName,setHandleLike,setHandleSave,likeByUser,
-  saveByUser }) => {
+const Posts = ({
+  id,
+  title,
+  description,
+  coordinators,
+  clubName,
+  setHandleLike,
+  setHandleSave,
+  likeByUser,
+  saveByUser,
+}) => {
   const [isliked, setLike] = useState(likeByUser);
   const [iscomment, setIsComment] = useState(false);
   const [comment, setComment] = useState("");
@@ -124,12 +135,17 @@ const Posts = ({ id, title, description, coordinators, clubName,setHandleLike,se
 
   const fetchComments = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/user/comment/getComments/${id}`,{
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `bearer ${JSON.parse(localStorage.getItem("token"))}`,
-        },
-      }); // Replace with actual endpoint
+      const response = await fetch(
+        `http://localhost:8000/user/comment/getComments/${id}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `bearer ${JSON.parse(
+              localStorage.getItem("token")
+            )}`,
+          },
+        }
+      ); // Replace with actual endpoint
       if (response.ok) {
         const data = await response.json();
         setComments(data);
@@ -154,14 +170,19 @@ const Posts = ({ id, title, description, coordinators, clubName,setHandleLike,se
     const name = JSON.parse(auth).name;
 
     try {
-      const response = await fetch(`http://localhost:8000/user/comment/addComment/${id}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `bearer ${JSON.parse(localStorage.getItem("token"))}`,
-        },
-        body: JSON.stringify({ userId, name, comment }),
-      });
+      const response = await fetch(
+        `http://localhost:8000/user/comment/addComment/${id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `bearer ${JSON.parse(
+              localStorage.getItem("token")
+            )}`,
+          },
+          body: JSON.stringify({ userId, name, comment }),
+        }
+      );
 
       if (response.ok) {
         // Comment added successfully, you can handle the response data here
@@ -178,7 +199,7 @@ const Posts = ({ id, title, description, coordinators, clubName,setHandleLike,se
   }
 
   function handleShare() {
-    const shareLink = `http://localhost:5173/posts/${id}`;
+    const shareLink = `http://localhost:5173/posts/view/${id}`;
 
     navigator.clipboard
       .writeText(shareLink)
@@ -251,20 +272,21 @@ const Posts = ({ id, title, description, coordinators, clubName,setHandleLike,se
     <CardContainer>
       <LogoAndName>
         <CgProfile style={{ fontSize: "3rem" }} />
-        <ClubName>{clubName}</ClubName>
+        <ClubName>{clubName || <Skeleton />}</ClubName>
       </LogoAndName>
 
-      <h3>{title}</h3>
-      <Description>{description}</Description>
+      <h3>{title || <Skeleton />}</h3>
+      <Description>{description || <Skeleton count={8} />}</Description>
 
-      {coordinators.map((cor, key) => (
-        <CoordinatorInfoContainer key={cor.id}>
-          <p>Contact {key + 1}: </p>
-          <p>{cor.name}</p>
-          <p>{cor.email}</p>
-          <p>{cor.phone}</p>
-        </CoordinatorInfoContainer>
-      ))}
+      {coordinators.length > 0 &&
+        coordinators.map((cor, key) => (
+          <CoordinatorInfoContainer key={cor.id}>
+            <p>Contact {key + 1}: </p>
+            <p>{cor.name}</p>
+            <p>{cor.email}</p>
+            <p>{cor.phone}</p>
+          </CoordinatorInfoContainer>
+        ))}
 
       <Actions>
         {!isliked ? (

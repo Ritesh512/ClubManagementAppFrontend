@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import styled from 'styled-components';
-import Spinner from '../ui/Spinner';
-import ReactPaginate from 'react-paginate';
-import './Pagination.css';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import styled from "styled-components";
+import Spinner from "../ui/Spinner";
+import ReactPaginate from "react-paginate";
+import "./Pagination.css";
 
 const Table = styled.table`
   width: 100%;
@@ -61,7 +61,7 @@ const PaginationWrapper = styled.div`
 
 const Saved = () => {
   const [likedPosts, setLikedPosts] = useState([]);
-  const auth = localStorage.getItem('user');
+  const auth = localStorage.getItem("user");
   const userID = JSON.parse(auth)._id;
   const [isLoading, setIsLoading] = useState(false);
   const [pageNumber, setPageNumber] = useState(0);
@@ -76,7 +76,7 @@ const Saved = () => {
         <Td>{post.clubName}</Td>
         <Td>{post.title}</Td>
         <ActionTd>
-          <Link to={`/posts/${post.postID}`}>View</Link>
+          <Link to={`/posts/view/${post.postID}`}>View</Link>
         </ActionTd>
       </tr>
     ));
@@ -84,22 +84,27 @@ const Saved = () => {
   useEffect(() => {
     const fetchLikedPosts = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/user/posts/save/${userID}`, {
-          headers: {
-            'Content-Type': 'application/json',
-            authorization: `bearer ${JSON.parse(localStorage.getItem('token'))}`,
-          },
-        });
+        const response = await fetch(
+          `http://localhost:8000/user/posts/save/${userID}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              authorization: `bearer ${JSON.parse(
+                localStorage.getItem("token")
+              )}`,
+            },
+          }
+        );
         if (response.ok) {
           const data = await response.json();
           setLikedPosts(data);
           setIsLoading(true);
         } else {
-          console.error('Failed to fetch saved posts');
+          console.error("Failed to fetch saved posts");
           setIsLoading(false);
         }
       } catch (error) {
-        console.error('Error fetching saved posts:', error);
+        console.error("Error fetching saved posts:", error);
         setIsLoading(false);
       }
     };
