@@ -47,13 +47,14 @@ The application is build using React Js, NodeJs, Express and MongoDb
 The College Club Management Application is a valuable tool for students seeking a comprehensive and organized way to stay connected with various clubs on campus. By providing a centralized platform for communication and engagement, the application contributes to the overall growth and development of students through their participation in extracurricular activities.
 
 # Features
-
+```
 - Super Admin can create clubs.
 - Club admin can create/edit/delete/view club posts.
 - User can create account.
 - User can like/comment/saved/share and Join a Club/Club Post.
 - Form Validation.
 - JWT implementation, password encryption, and decryption using bcrypt.
+```
 
 # Results
 | Title | Image    |
